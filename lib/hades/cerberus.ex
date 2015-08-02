@@ -22,7 +22,7 @@ defmodule Hades.Cerberus do
   #
 
   def handle_call(:list, _from, state) do
-    result = "HEY, MAMA!"
+    result = %{name: "HEY, MAMA!"}
     {:reply, result, state}
   end
 

@@ -1,0 +1,6 @@
+<ul>
+  <%= for {key, value} <- @process do %>
+
+    <li><%= key %>: <%= value %></li>
+  <% end %>
+</ul>

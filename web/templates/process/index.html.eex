@@ -1,0 +1,6 @@
+<ul>
+  <%= for {key, value} <- @processes_list do %>
+  
+    <li><%= key %>: <%= value %></li>
+  <% end %>
+</ul>

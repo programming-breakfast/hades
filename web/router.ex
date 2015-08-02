@@ -15,7 +15,8 @@ defmodule Hades.Router do
   scope "/", Hades do
     pipe_through :browser # Use the default browser stack
 
-    get "/", PageController, :index
+    get "/", ProcessController, :index
+    get "/show/:name", ProcessController, :show
   end
 
   # Other scopes may use custom stacks.
