@@ -1,6 +1,8 @@
 <ul>
-  <%= for {key, value} <- @processes_list do %>
-  
-    <li><%= key %>: <%= value %></li>
+  <%= for soul <- @processes_list do %>
+      <li>
+        <p><%= soul.name %>: <%= soul.description %></p>
+        <p><a href="<%= process_path(@conn, :show, soul.name) %>">Show process info</a>
+      </li>
   <% end %>
 </ul>

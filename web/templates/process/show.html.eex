@@ -1,6 +1,9 @@
 <ul>
-  <%= for {key, value} <- @process do %>
-
-    <li><%= key %>: <%= value %></li>
-  <% end %>
+    <li>name: <%= @process.name %></li>
+    <li>description: <%= @process.description %></li>
+    <li>pid: <%= @process.os_pid %></li>
 </ul>
+
+<p>
+  <a href="<%= process_path(@conn, :index) %>">List all processes</a>
+</p>

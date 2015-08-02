@@ -17,7 +17,15 @@ defmodule Hades.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Hades, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :runtime_tools]]
+     applications: [
+       :phoenix,
+       :phoenix_html,
+       :cowboy,
+       :logger,
+       :runtime_tools,
+       :exec,
+       :porcelain
+     ]]
   end
 
   # Specifies which paths to compile per environment
@@ -31,6 +39,9 @@ defmodule Hades.Mixfile do
     [{:phoenix, "~> 0.15"},
      {:phoenix_html, "~> 1.4"},
      {:phoenix_live_reload, "~> 0.5", only: :dev},
-     {:cowboy, "~> 1.0"}]
+     {:cowboy, "~> 1.0"},
+     {:exec, github: "saleyn/erlexec"},
+     {:porcelain, "~> 2.0"}
+    ]
   end
 end
