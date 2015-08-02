@@ -17,7 +17,7 @@ defmodule Hades.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Hades, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger]]
+     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :runtime_tools]]
   end
 
   # Specifies which paths to compile per environment
