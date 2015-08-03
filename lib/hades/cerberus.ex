@@ -39,9 +39,8 @@ defmodule Hades.Cerberus do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
-    [[soul] | _] = :ets.match(__MODULE__, {:'_', pid, :'$1'})
+    soul = find_soul_by_pid(pid)
     Logger.warn "Soul #{soul.name} exited with #{inspect message}. Restarting."
-
     start_soul(soul)
 
     {:noreply, state}
@@ -59,6 +58,11 @@ defmodule Hades.Cerberus do
     start_souls(config)
 
     {:ok, %{}}
+  end
+
+  defp find_soul_by_pid(pid) do
+    [[soul] | _] = :ets.match(__MODULE__, {:'_', pid, :'$1'})
+    soul
   end
 
   defp start_souls(config) do
