@@ -24,6 +24,10 @@ defmodule Hades.Cerberus do
     GenServer.call(__MODULE__, {:stop, name})
   end
 
+  def start(name) do
+    GenServer.call(__MODULE__, {:start, name})
+  end
+
   #
   # Server callbacks
   #
@@ -45,6 +49,12 @@ defmodule Hades.Cerberus do
   def handle_call({:stop, name}, _from, state) do
     [{_, _, soul} | _] = :ets.lookup(__MODULE__, name)
     stop_soul(soul)
+    {:reply, soul, state}
+  end
+
+  def handle_call({:start, name}, _from, state) do
+    [{_, _, soul} | _] = :ets.lookup(__MODULE__, name)
+    start_soul(soul)
     {:reply, soul, state}
   end
 
