@@ -1,8 +1,0 @@
-<ul>
-  <%= for soul <- @processes_list do %>
-      <li>
-        <p><%= soul.name %>(<%= soul.state %>): <%= soul.description %></p>
-        <p><a href="<%= process_path(@conn, :show, soul.name) %>">Show process info</a>
-      </li>
-  <% end %>
-</ul>

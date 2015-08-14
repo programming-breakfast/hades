@@ -1,0 +1,13 @@
+<h1>Souls</h1>
+<table class="table table-striped table-bordered">
+  <%= for soul <- @processes_list do %>
+      <tr>
+        <td><%= soul.name %></td>
+        <td><%= soul.state %></td>
+        <td><%= soul.description %></td>
+        <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
+        <td><a href="<%= soul_path(@conn, :stop, soul.name) %>">Stop</a></td>
+        <td><a href="<%= soul_path(@conn, :show, soul.name) %>">Show process info</a></td>
+      </tr>
+  <% end %>
+</table>

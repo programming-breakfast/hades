@@ -5,5 +5,5 @@
 </ul>
 
 <p>
-  <a href="<%= process_path(@conn, :index) %>">List all processes</a>
+  <a href="<%= soul_path(@conn, :index) %>">List all processes</a>
 </p>
