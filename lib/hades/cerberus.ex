@@ -40,8 +40,14 @@ defmodule Hades.Cerberus do
 
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
     soul = find_soul(pid)
-    Logger.warn "Soul #{soul.name} exited with #{inspect message}. Restarting."
-    start_soul(soul)
+    case soul.state do
+      :trying_to_stop ->
+        Logger.warn "Soul #{soul.name} successfully stopped."
+        update_soul(soul, %{state: 'stopped'})
+      _ ->
+        Logger.warn "Soul #{soul.name} exited with #{inspect message}. Restarting."
+        start_soul(soul)
+    end
 
     {:noreply, state}
   end
