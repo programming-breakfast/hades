@@ -39,7 +39,7 @@ defmodule Hades.Cerberus do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
-    soul = find_soul_by_pid(pid)
+    soul = find_soul(pid)
     Logger.warn "Soul #{soul.name} exited with #{inspect message}. Restarting."
     start_soul(soul)
 
@@ -49,7 +49,7 @@ defmodule Hades.Cerberus do
 
   def init(_) do
     config = [
-      %Soul{name: "ping-ya", description: "foo description", start: "ping ya.ru"},
+      %Soul{name: "ping-ya", description: "foo description", start: "ping ya.ru", stop: "kill -9 %pid%"},
       %Soul{name: "ping-google", description: "foo description", start: "ping google.com"}
     ]
 
@@ -60,8 +60,13 @@ defmodule Hades.Cerberus do
     {:ok, %{}}
   end
 
-  defp find_soul_by_pid(pid) do
-    [[soul] | _] = :ets.match(__MODULE__, {:'_', pid, :'$1'})
+  defp find_soul(criteria) when is_pid(criteria) do
+    [[soul] | _] = :ets.match(__MODULE__, {:'_', criteria, :'$1'})
+    soul
+  end
+
+  defp find_soul(criteria) do
+    [[soul] | _] = :ets.match(__MODULE__, {criteria, :'_', :'$1'})
     soul
   end
 
@@ -75,14 +80,20 @@ defmodule Hades.Cerberus do
   defp start_soul(soul) do
     Logger.info "Starting external process #{soul.name}."
 
-    soul = case :exec.run(String.to_char_list(soul.start), @soul_startup_options) do
+    case :exec.run(String.to_char_list(soul.start), @soul_startup_options) do
       {:ok, pid, os_pid} ->
-        %Soul{soul | os_pid: os_pid, pid: pid, state: :running, timer: 1}
+        update_soul(soul, %{os_pid: os_pid, pid: pid, state: :running, timer: 1})
       {_, _, _} ->
-        %Soul{soul | state: :startup_error, timer: 1}
+        update_soul(soul, %{state: :startup_error, timer: 1})
     end
+  end
 
-    :ets.insert(__MODULE__, {soul.name, soul.pid, soul})
+  defp stop_soul(soul) do
+    update_soul(%{state: :trying_to_stop})
+  end
+
+  defp update_soul(soul, soul_attrs) do
+    :ets.insert(__MODULE__, {soul.name, soul.pid, Map.merge(soul, soul_attrs)})
   end
 
   defp init_ets do
