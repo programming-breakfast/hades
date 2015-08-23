@@ -76,13 +76,12 @@ defmodule Hades.Cerberus do
 
   def init(_) do
     config = [
-      %Soul{name: "ping-ya", description: "foo description", start: "ping ya.ru"},
-      %Soul{name: "ping-google", description: "foo description", start: "ping google.ru"}
+      %Soul{name: "ping-ya", description: "foo description", start: "ping ya.ru & echo $! > %pid_file%", pid_file: "tmp/ping-ya.pid"}
     ]
 
     init_ets
 
-    start_souls(config)
+    config |> Enum.each(&start_soul(&1))
 
     {:ok, %{}}
   end
@@ -95,11 +94,6 @@ defmodule Hades.Cerberus do
   defp find_soul(criteria) do
     [[soul] | _] = :ets.match(__MODULE__, {criteria, :'_', :'$1'})
     soul
-  end
-
-  defp start_souls(config) do
-    config
-    |> Enum.each(&start_soul(&1))
   end
 
   @soul_startup_options [:monitor]
@@ -117,10 +111,13 @@ defmodule Hades.Cerberus do
 
   defp start_soul(soul) do
     Logger.info "Starting external process #{soul.name} with suct options: #{inspect soul_startup_options(soul)}."
-    case :exec.run(String.to_char_list(soul.start), soul_startup_options(soul)) do
-      {:ok, pid, os_pid} ->
+    case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
+      {:ok, _} ->
+        {:ok, os_pid_str} = File.read(soul.pid_file)
+        {os_pid, _} = Integer.parse(os_pid_str)
+        {:ok, pid, os_pid} = :exec.manage(os_pid, soul_startup_options(soul))
         update_soul(soul, %{os_pid: os_pid, pid: pid, state: :running, timer: 1})
-      {_, _, _} ->
+      {_, _} ->
         update_soul(soul, %{state: :startup_error, timer: 1})
     end
   end
