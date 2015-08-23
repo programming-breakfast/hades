@@ -60,11 +60,11 @@ defmodule Hades.Cerberus do
 
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
     soul = find_soul(pid)
-    Logger.warn "Soul #{inspect soul} down."
+    Logger.warn "Soul #{inspect soul} down with #{inspect message}."
+    update_soul(soul, %{state: :stopped, os_pid: nil, pid: nil})
     case soul.state do
       :trying_to_stop ->
         Logger.warn "Soul #{soul.name} successfully stopped."
-        update_soul(soul, %{state: :stopped, os_pid: nil, pid: nil})
       _ ->
         Logger.warn "Soul #{soul.name} exited with #{inspect message}. Restarting."
         start_soul(soul)
@@ -76,7 +76,8 @@ defmodule Hades.Cerberus do
 
   def init(_) do
     config = [
-      %Soul{name: "ping-ya", description: "foo description", start: "ping ya.ru & echo $! > %pid_file%", pid_file: "tmp/ping-ya.pid"}
+      %Soul{name: "foo", start: "while true; do sleep 1; done & echo $! > %pid_file%", pid_file: "tmp/foo.pid"},
+      %Soul{name: "bar", start: "while true; do sleep 1; done & echo $! > %pid_file%", stop: "kill -9 `cat tmp/bar.pid`", pid_file: "tmp/bar.pid"}
     ]
 
     init_ets
@@ -124,7 +125,13 @@ defmodule Hades.Cerberus do
 
   defp stop_soul(soul) do
     update_soul(soul, %{state: :trying_to_stop})
-    :exec.stop(soul.pid)
+    case soul.stop do
+      nil ->
+        :exec.stop(soul.pid)
+      stop_command ->
+        Logger.info("Stop with #{stop_command}")
+        :exec.run(String.to_char_list(stop_command), [])
+    end
   end
 
   defp update_soul(soul, soul_attrs) do
