@@ -16,6 +16,10 @@ defmodule Hades.Cerberus do
     GenServer.call(__MODULE__, :list)
   end
 
+  def update_metrics(metrics) do
+    GenServer.call(__MODULE__, {:update_metrics, metrics})
+  end
+
   def show(name) do
     GenServer.call(__MODULE__, {:show, name})
   end
@@ -33,12 +37,24 @@ defmodule Hades.Cerberus do
   #
 
   def handle_call(:list, _from, state) do
-    result = :ets.tab2list(__MODULE__)
+    {:reply, soul_list(), state}
+  end
+
+  defp soul_list do
+    :ets.tab2list(__MODULE__)
     |> Enum.map(fn {_, _, soul} -> soul end)
+  end
 
-    IO.inspect result
-
-    {:reply, result, state}
+  def handle_call({:update_metrics, metrics}, _from, state) do
+    soul_list() |> Enum.each(fn(soul) ->
+      case soul.os_pid do
+        nil ->
+          update_soul(soul, %{metrics: nil})
+        _ ->
+          update_soul(soul, %{metrics: Dict.get(metrics, Integer.to_string(soul.os_pid))})
+      end
+    end)
+    {:reply, nil, state}
   end
 
   def handle_call({:show, name}, _from, state) do
@@ -54,13 +70,18 @@ defmodule Hades.Cerberus do
 
   def handle_call({:start, name}, _from, state) do
     [{_, _, soul} | _] = :ets.lookup(__MODULE__, name)
-    start_soul(soul)
+    Logger.info "start process #{inspect soul}"
+    case soul.state do
+      :stopped ->
+        start_soul(soul)
+      _ ->
+        Logger.warn("You cant start only stopped process #{soul.name}")
+    end
     {:reply, soul, state}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
     soul = find_soul(pid)
-    Logger.warn "Soul #{inspect soul} down with #{inspect message}."
     update_soul(soul, %{state: :stopped, os_pid: nil, pid: nil})
     case soul.state do
       :trying_to_stop ->
@@ -76,6 +97,7 @@ defmodule Hades.Cerberus do
 
   def init(_) do
     config = [
+      %Soul{name: "metrics", start: "python3 mon/ps_monitoring.py & echo $! > %pid_file%", pid_file: "tmp/metrics.pid"},
       %Soul{name: "foo", start: "while true; do sleep 1; done & echo $! > %pid_file%", pid_file: "tmp/foo.pid"},
       %Soul{name: "bar", start: "while true; do sleep 1; done & echo $! > %pid_file%", stop: "kill -9 `cat tmp/bar.pid`", pid_file: "tmp/bar.pid"}
     ]

@@ -1,13 +1,40 @@
 <h1>Souls</h1>
 <table class="table table-striped table-bordered">
+  <tr>
+    <th>Name</th>
+    <th>Pid</th>
+    <th>State</th>
+    <th>cpu system</th>
+    <th>cpu user</th>
+    <th>cpu percent</th>
+    <th>memory pageins</th>
+    <th>memory pfaults</th>
+    <th>memory rss</th>
+    <th>memory vms</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
   <%= for soul <- @processes_list do %>
       <tr>
         <td><%= soul.name %></td>
+        <td><%= soul.os_pid %></td>
         <td><%= soul.state %></td>
-        <td><%= soul.description %></td>
+        <td><%= soul.metrics["cpu"]["system"] %></td>
+        <td><%= soul.metrics["cpu"]["user"] %></td>
+        <td><%= soul.metrics["cpu"]["percent"] %></td>
+        <td><%= soul.metrics["memory"]["pageins"] %></td>
+        <td><%= soul.metrics["memory"]["pfaults"] %></td>
+        <td><%= soul.metrics["memory"]["rss"] %></td>
+        <td><%= soul.metrics["memory"]["vms"] %></td>
         <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
         <td><a href="<%= soul_path(@conn, :stop, soul.name) %>">Stop</a></td>
         <td><a href="<%= soul_path(@conn, :show, soul.name) %>">Show process info</a></td>
       </tr>
   <% end %>
 </table>
+
+
+<script type="text/javascript">
+  setTimeout(function(){location.reload()}, 2000)
+</script>

@@ -17,16 +17,19 @@ class StatusHandler(tornado.web.RequestHandler):
         processes = {}
         pids = self.get_argument('pids', '').split(',')
         for pid in pids:
-            process = psutil.Process(int(pid))
+            try:
+                process = psutil.Process(int(pid))
 
-            processes[pid] = {
-                "cpu": {
-                    'user': process.cpu_times()[0],
-                    'system': process.cpu_times()[1],
-                    'percent': process.cpu_percent(),
-                },
-                "memmory": dict(map(lambda i: (i[0], i[1] / (1024 * 1024)), process.memory_info_ex()._asdict().items()))
-            }
+                processes[pid] = {
+                    "cpu": {
+                        'user': process.cpu_times()[0],
+                        'system': process.cpu_times()[1],
+                        'percent': process.cpu_percent(),
+                    },
+                    "memory": dict(map(lambda i: (i[0], i[1] / (1024 * 1024)), process.memory_info_ex()._asdict().items()))
+                }
+            except:
+                logging.info("Can not receive data from pid#%s", pid)
         logging.info("hook recived data %s", pids)
         self.set_status(200)
         self.add_header('Content-Type', 'application/json')

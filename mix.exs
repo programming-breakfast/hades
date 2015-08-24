@@ -24,7 +24,8 @@ defmodule Hades.Mixfile do
        :logger,
        :runtime_tools,
        :exec,
-       :porcelain
+       :porcelain,
+       :httpotion
      ]]
   end
 
@@ -41,7 +42,10 @@ defmodule Hades.Mixfile do
      {:phoenix_live_reload, "~> 0.5", only: :dev},
      {:cowboy, "~> 1.0"},
      {:exec, github: "saleyn/erlexec"},
-     {:porcelain, "~> 2.0"}
+     {:porcelain, "~> 2.0"},
+     {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.2"},
+     {:httpotion, "~> 2.1.0"},
+     {:exjsx, github: "talentdeficit/exjsx"}
     ]
   end
 end
