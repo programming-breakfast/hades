@@ -14,21 +14,26 @@ defmodule Hades.Empusa do
 
   def update_metrics do
     :timer.sleep(1000)
-    Hades.Cerberus.list() |> Enum.filter(fn soul -> soul.state == :running end)
+    result_metrics = Hades.Cerberus.list()
+    |> Enum.filter(fn soul -> soul.os_pid end)
     |> Enum.map(fn soul -> soul.os_pid end) |> metrics
-    |> Hades.Cerberus.update_metrics
+    case result_metrics do
+      {:ok, result} ->
+        Hades.Cerberus.update_metrics(result)
+      {:error, reason} ->
+        Logger.warn("Failed to retrive data bacause of #{reason}")
+    end
+
     update_metrics()
   end
 
   def metrics(pids) do
     try do
       response = HTTPotion.get "http://localhost:8000/status?pids=#{Enum.join(pids, ",")}"
-      {:ok, result} = JSX.decode(response.body)
-      result
+      JSX.decode(response.body)
     rescue
       _error ->
-        Logger.warn("Failed to connect to metrics server")
-        %{}
+        {:error, :failed_to_connect}
     end
   end
 end
