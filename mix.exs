@@ -25,6 +25,7 @@ defmodule Hades.Mixfile do
        :runtime_tools,
        :exec,
        :porcelain,
+       :tzdata,
        :httpotion
      ]]
   end
@@ -45,6 +46,8 @@ defmodule Hades.Mixfile do
      {:porcelain, "~> 2.0"},
      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.2"},
      {:httpotion, "~> 2.1.0"},
+     {:timex, "~> 0.19.4"},
+     {:erlport, git: "https://github.com/hdima/erlport.git"},
      {:exjsx, github: "talentdeficit/exjsx"}
     ]
   end

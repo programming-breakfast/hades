@@ -86,7 +86,7 @@ defmodule Hades.Cerberus do
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
     soul = find_soul(pid)
     if !is_nil(soul) do
-      update_soul(soul, %{state: :stopped, os_pid: nil, pid: nil, metrics: nil})
+      update_soul(soul, %{state: :stopped, os_pid: nil, pid: nil, metrics: nil, created_at: nil})
       File.rm(soul.pid_file)
       case soul.state do
         :trying_to_stop ->
@@ -148,10 +148,10 @@ defmodule Hades.Cerberus do
         {:ok, os_pid_str} = File.read(soul.pid_file)
         {os_pid, _} = Integer.parse(os_pid_str)
         {:ok, pid, os_pid} = :exec.manage(os_pid, soul_startup_options(soul))
-        update_soul(soul, %{os_pid: os_pid, pid: pid, state: :running, timer: 1})
+        update_soul(soul, %{os_pid: os_pid, pid: pid, state: :running, created_at: Timex.Date.now})
       {s, reason} ->
         Logger.warn("Startup error with #{soul.name} caz 1. #{inspect s} and 2. #{inspect reason}")
-        update_soul(soul, %{state: :stopped, timer: 1})
+        update_soul(soul, %{state: :stopped, created_at: nil})
     end
   end
 
@@ -167,7 +167,6 @@ defmodule Hades.Cerberus do
   end
 
   defp update_soul(soul, soul_attrs) do
-    Logger.warn("Update soul##{soul.name} with #{inspect soul_attrs}")
     updated_soul = Map.merge(soul, soul_attrs)
     :ets.insert(__MODULE__, {updated_soul.name, updated_soul.pid, updated_soul})
   end
