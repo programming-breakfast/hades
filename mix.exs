@@ -20,12 +20,14 @@ defmodule Hades.Mixfile do
      applications: [
        :phoenix,
        :phoenix_html,
+       :phoenix_ecto,
        :cowboy,
        :logger,
        :runtime_tools,
        :exec,
        :porcelain,
        :tzdata,
+       :timex,
        :httpotion
      ]]
   end
@@ -38,15 +40,18 @@ defmodule Hades.Mixfile do
   #
   # Type `mix help deps` for examples and options
   defp deps do
-    [{:phoenix, "~> 0.15"},
-     {:phoenix_html, "~> 1.4"},
-     {:phoenix_live_reload, "~> 0.5", only: :dev},
+    [{:phoenix, "~> 1.0.0"},
+     {:phoenix_html, "~> 2.1"},
+     {:phoenix_live_reload, "~> 1.0", only: :dev},
+     {:phoenix_ecto, "~> 1.1"},
+     {:sqlite_ecto, ">= 0.0.0"},
      {:cowboy, "~> 1.0"},
      {:exec, github: "saleyn/erlexec"},
      {:porcelain, "~> 2.0"},
      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.2"},
      {:httpotion, "~> 2.1.0"},
      {:timex, "~> 0.19.4"},
+     {:timex_ecto, "~> 0.5.0"},
      {:erlport, git: "https://github.com/hdima/erlport.git"},
      {:exjsx, github: "talentdeficit/exjsx"}
     ]

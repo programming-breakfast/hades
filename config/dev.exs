@@ -27,9 +27,7 @@ config :hades, Hades.Endpoint,
 config :logger, :console, format: "[$level] $message\n"
 
 # Configure your database
-# config :hades, Hades.Repo,
-  # adapter: Ecto.Adapters.Postgres,
-  # username: "postgres",
-  # password: "postgres",
-  # database: "hades_dev",
-  # size: 10 # The amount of database connections in the pool
+config :hades, Hades.Repo,
+  adapter: Sqlite.Ecto,
+  database: "db/hades_dev.sqlite",
+  pool_size: 10

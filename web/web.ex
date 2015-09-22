@@ -18,7 +18,8 @@ defmodule Hades.Web do
 
   def model do
     quote do
-      # use Ecto.Model
+      use Ecto.Model
+      use Timex.Ecto.Timestamps
     end
   end
 
@@ -26,9 +27,9 @@ defmodule Hades.Web do
     quote do
       use Phoenix.Controller
 
-      # alias Hades.Repo
-      # import Ecto.Model
-      # import Ecto.Query, only: [from: 2]
+      alias Hades.Repo
+      import Ecto.Model
+      import Ecto.Query, only: [from: 2]
 
       import Hades.Router.Helpers
     end
@@ -58,9 +59,9 @@ defmodule Hades.Web do
     quote do
       use Phoenix.Channel
 
-      # alias Hades.Repo
-      # import Ecto.Model
-      # import Ecto.Query, only: [from: 2]
+      alias Hades.Repo
+      import Ecto.Model
+      import Ecto.Query, only: [from: 2]
 
     end
   end

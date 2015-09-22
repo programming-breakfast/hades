@@ -2,7 +2,9 @@ defmodule Hades.SoulController do
   use Hades.Web, :controller
 
   def index(conn, _params) do
-    render conn, "index.html", processes_list: Hades.Styx.list()
+    render conn, "index.html",
+    processes_list: Hades.Styx.list(),
+    metrics: Hades.Empusa.metrics()
   end
 
   def show(conn, params) do

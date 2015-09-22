@@ -10,6 +10,7 @@ defmodule Hades do
       # Start the endpoint when the application starts
       supervisor(Hades.Endpoint, []),
       # Here you could define other workers and supervisors as children
+      worker(Hades.Repo, []),
       worker(Hades.Styx, []),
       worker(Hades.Cerberus, []),
       worker(Hades.Empusa, [])
