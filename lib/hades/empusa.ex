@@ -7,7 +7,7 @@ defmodule Hades.Empusa do
   end
 
   def init(_) do
-    spawn_link fn -> update_metrics() end
+    # spawn_link fn -> update_metrics() end
 
     {:ok, %{}}
   end
