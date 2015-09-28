@@ -11,7 +11,8 @@ defmodule Hades.Styx do
   def init(_) do
     config = [
       %Soul{name: "foo", start: "while true; do sleep 1; done & echo $! > %pid_file%", pid_file: "tmp/foo.pid"},
-      %Soul{name: "bar", start: "while true; do sleep 2; done & echo $! > %pid_file%", stop: "kill -9 `cat tmp/bar.pid`", pid_file: "tmp/bar.pid"}
+      %Soul{name: "bar", start: "while true; do sleep 2; done & echo $! > %pid_file%", stop: "kill -9 `cat tmp/bar.pid`", pid_file: "tmp/bar.pid"},
+      %Soul{name: "mysql", start: "/usr/local/Cellar/mysql/5.6.26/support-files/mysql.server start", stop: "/usr/local/Cellar/mysql/5.6.26/support-files/mysql.server stop", pid_file: "/usr/local/var/mysql/Timurs-MBP.th.aviasales.ru.pid"}
     ]
 
     :ets.new(__MODULE__, [:named_table, :set])
