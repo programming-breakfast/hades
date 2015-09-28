@@ -74,16 +74,17 @@ defmodule Hades.Cerberus do
   #
 
   @soul_startup_options [:monitor]
+  @stop_timeout 60
 
   defp soul_startup_options(soul) do
-    startup_options = case soul.stop do
+    kill_options = case soul.stop do
       nil ->
         []
       stop_command ->
         [{:kill, String.to_char_list(stop_command)}]
     end
 
-    startup_options ++ @soul_startup_options
+    kill_options ++ [{:kill_timeout, (soul.stop_timeout || @stop_timeout)}] ++ @soul_startup_options
   end
 
   defp start_soul(soul) do
@@ -102,12 +103,6 @@ defmodule Hades.Cerberus do
 
   defp stop_soul(soul) do
     Styx.update(soul.name, %{state: :trying_to_stop})
-    case soul.stop do
-      nil ->
-        :exec.stop(soul.pid)
-      stop_command ->
-        Logger.info("Stop with #{stop_command}")
-        :exec.run(String.to_char_list(stop_command), [])
-    end
+    :exec.stop(soul.pid)
   end
 end
