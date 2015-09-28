@@ -20,6 +20,7 @@ defmodule Hades.Router do
 
     get "/souls/:name/start", SoulController, :start
     get "/souls/:name/stop", SoulController, :stop
+    get "/souls/:name/restart", SoulController, :restart
   end
 
   # Other scopes may use custom stacks.

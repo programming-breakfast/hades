@@ -20,4 +20,9 @@ defmodule Hades.SoulController do
     Hades.Cerberus.start(params["name"])
     redirect conn, to: soul_path(conn, :index)
   end
+
+  def restart(conn, params) do
+    Hades.Cerberus.restart(params["name"])
+    redirect conn, to: soul_path(conn, :index)
+  end
 end

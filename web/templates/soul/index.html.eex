@@ -14,6 +14,7 @@
     <th></th>
     <th></th>
     <th></th>
+    <th></th>
   </tr>
   <%= for soul <- @processes_list do %>
       <tr>
@@ -29,6 +30,7 @@
         <td><%= @metrics[soul.name]["memory_vms"] %></td>
         <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
         <td><a href="<%= soul_path(@conn, :stop, soul.name) %>">Stop</a></td>
+        <td><a href="<%= soul_path(@conn, :restart, soul.name) %>">Restart</a></td>
         <td><a href="<%= soul_path(@conn, :show, soul.name) %>">Show process info</a></td>
       </tr>
   <% end %>

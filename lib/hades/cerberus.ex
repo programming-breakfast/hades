@@ -26,6 +26,10 @@ defmodule Hades.Cerberus do
     GenServer.call(__MODULE__, {:start, name})
   end
 
+  def restart(name) do
+    GenServer.call(__MODULE__, {:restart, name})
+  end
+
   def manage(name) do
     GenServer.call(__MODULE__, {:manage, name})
   end
@@ -41,6 +45,21 @@ defmodule Hades.Cerberus do
     else
       Logger.warn("You can stop only running process '#{soul.name}'")
     end
+    {:reply, soul, state}
+  end
+
+  def handle_call({:restart, name}, _from, state) do
+    soul = Styx.find(name)
+
+    case soul.state do
+      :running ->
+        stop_soul(soul, true)
+      :stopped ->
+        async_start_soul(soul)
+      _ ->
+        Logger.warn("You can restart only stopped or running process '#{soul.name}'")
+    end
+
     {:reply, soul, state}
   end
 
@@ -76,9 +95,11 @@ defmodule Hades.Cerberus do
       case soul.state do
         :trying_to_stop ->
           Logger.warn "Soul #{soul.name} successfully stopped."
+        :trying_to_restart ->
+          async_start_soul(soul)
         _ ->
           Logger.warn "Soul #{soul.name} exited with #{inspect message}. Restarting."
-          start_soul(soul)
+          async_start_soul(soul)
       end
     end
 
@@ -127,7 +148,17 @@ defmodule Hades.Cerberus do
   end
 
   defp stop_soul(soul) do
-    Styx.update(soul.name, %{state: :trying_to_stop})
+    stop_soul(soul, false)
+  end
+
+  defp stop_soul(soul, restart) do
+    state = if restart do
+      :trying_to_restart
+    else
+      :trying_to_stop
+    end
+
+    Styx.update(soul.name, %{state: state})
     :exec.stop(soul.pid)
   end
 end
