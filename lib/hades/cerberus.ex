@@ -10,7 +10,7 @@ defmodule Hades.Cerberus do
   end
 
   def init(_) do
-    Styx.list() |> Enum.each(&start_soul(&1))
+    Styx.list() |> Enum.each(&async_start_soul(&1))
     {:ok, %{}}
   end
 
@@ -24,6 +24,10 @@ defmodule Hades.Cerberus do
 
   def start(name) do
     GenServer.call(__MODULE__, {:start, name})
+  end
+
+  def manage(name) do
+    GenServer.call(__MODULE__, {:manage, name})
   end
 
   #
@@ -45,9 +49,21 @@ defmodule Hades.Cerberus do
     Logger.info "start process #{inspect soul}"
     case soul.state do
       :stopped ->
-        start_soul(soul)
+        async_start_soul(soul)
       _ ->
         Logger.warn("You can start only stopped process '#{soul.name}'")
+    end
+    {:reply, soul, state}
+  end
+
+  def handle_call({:manage, name}, _from, state) do
+    soul = Styx.find(name)
+    Logger.info "manage process #{inspect soul}"
+    case soul.state do
+      :trying_to_run ->
+        manage_soul(soul)
+      _ ->
+        Logger.warn("You can manage only pre runned process '#{soul.name}'")
     end
     {:reply, soul, state}
   end
@@ -87,15 +103,23 @@ defmodule Hades.Cerberus do
     kill_options ++ [{:kill_timeout, (soul.stop_timeout || @stop_timeout)}] ++ @soul_startup_options
   end
 
+  defp manage_soul(soul) do
+    {:ok, os_pid_str} = File.read(soul.pid_file)
+    {os_pid, _} = Integer.parse(os_pid_str)
+    {:ok, pid, os_pid} = :exec.manage(os_pid, soul_startup_options(soul))
+    Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
+  end
+
+  defp async_start_soul(soul) do
+    spawn_link fn -> start_soul(soul) end
+  end
+
   defp start_soul(soul) do
     Logger.info "Starting external process #{soul.name} with suct options: #{inspect soul_startup_options(soul)}."
     Styx.update(soul.name, %{state: :trying_to_run})
     case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
       {:ok, _} ->
-        {:ok, os_pid_str} = File.read(soul.pid_file)
-        {os_pid, _} = Integer.parse(os_pid_str)
-        {:ok, pid, os_pid} = :exec.manage(os_pid, soul_startup_options(soul))
-        Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
+        __MODULE__.manage(soul.name)
       {s, reason} ->
         Logger.warn("Startup error with #{soul.name} caz 1. #{inspect s} and 2. #{inspect reason}")
         Styx.update(soul.name, %{state: :stopped, created_at: nil})
