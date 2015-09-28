@@ -75,28 +75,35 @@ defmodule Hades.Cerberus do
 
   @soul_startup_options [:monitor]
 
-  defp soul_startup_options(soul) do
-    startup_options = case soul.stop do
-      nil ->
-        []
-      stop_command ->
-        [{:kill, String.to_char_list(stop_command)}]
-    end
+  defp os_pid_from(pid_file) do
+    {:ok, os_pid_str} = File.read(pid_file)
+    {os_pid, _} = Integer.parse(os_pid_str)
+    os_pid
+  end
 
-    startup_options ++ @soul_startup_options
+  defp start_soul_from_pid_file(soul) do
+    os_pid = os_pid_from(soul.pid_file)
+    case :exec.manage(os_pid, @soul_startup_options) do
+      {:ok, pid, os_pid} ->
+        Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
+      {:error, :not_found} ->
+        Logger.warn("Startup error with managing #{soul.name}: process with PID##{os_pid} does NOT exist")
+        # File.rm(soul.pid_file)
+        # start_soul(soul)
+    end
   end
 
   defp start_soul(soul) do
-    Logger.info "Starting external process #{soul.name} with suct options: #{inspect soul_startup_options(soul)}."
-    case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
-      {:ok, _} ->
-        {:ok, os_pid_str} = File.read(soul.pid_file)
-        {os_pid, _} = Integer.parse(os_pid_str)
-        {:ok, pid, os_pid} = :exec.manage(os_pid, soul_startup_options(soul))
-        Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
-      {s, reason} ->
-        Logger.warn("Startup error with #{soul.name} caz 1. #{inspect s} and 2. #{inspect reason}")
-        Styx.update(soul.name, %{state: :stopped, created_at: nil})
+    Logger.info "Starting external process #{soul.name} with suct options: #{inspect @soul_startup_options}."
+    if File.exists?(soul.pid_file) do
+      start_soul_from_pid_file(soul)
+    else
+      case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
+        {:ok, _} ->
+          start_soul_from_pid_file(soul)
+        {s, reason} ->
+          Logger.warn("Startup error with executing #{soul.name} caz 1. #{inspect s} and 2. #{inspect reason}")
+      end
     end
   end
 
