@@ -89,6 +89,7 @@ defmodule Hades.Cerberus do
 
   defp start_soul(soul) do
     Logger.info "Starting external process #{soul.name} with suct options: #{inspect soul_startup_options(soul)}."
+    Styx.update(soul.name, %{state: :trying_to_run})
     case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
       {:ok, _} ->
         {:ok, os_pid_str} = File.read(soul.pid_file)
