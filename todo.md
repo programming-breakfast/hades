@@ -1,6 +1,10 @@
-- start hades when processes already exists (when erlexec will be fixed)
-- kill команду
+- start hades when processes already exists
+- kill command
 - get created datetime of os processes
-- system metrics
-- resourses monitoring + restart
+- resourses monitoring + restart (red zone)
 - read soul config
+- do not do cycle restarts (100, 1000, 10000)
+- unmonitor processes
+- web api to restart all
+
+- system metrics
