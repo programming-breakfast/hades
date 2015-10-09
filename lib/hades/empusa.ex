@@ -10,7 +10,7 @@ defmodule Hades.Empusa do
 
   def init(_) do
     spawn_link fn -> update_state_metrics() end
-    spawn_link fn -> record_metrics_to_db() end
+    # spawn_link fn -> record_metrics_to_db() end
 
     {:ok, %{}}
   end
@@ -46,6 +46,7 @@ defmodule Hades.Empusa do
           os_pid = Integer.to_string(soul.os_pid)
           Map.put(acc, soul.name, %{
             "name" => soul.name,
+            "created_at" => Timex.Date.from(result[os_pid]["created_at"], :secs),
             "cpu_user" => result[os_pid]["cpu"]["user"],
             "cpu_system" => result[os_pid]["cpu"]["system"],
             "cpu_percent" => result[os_pid]["cpu"]["percent"],

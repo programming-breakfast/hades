@@ -15,8 +15,8 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 - [x] resource monitoring of existed processes
 - [x] monitoring of processes
 - [x] simple web front
+- [x] get created datetime of os processes
 
-- [ ] get created datetime of os processes
 - [ ] read soul config
 - [ ] do not do cycle restarts(100, 1000, 10000)
 - [ ] unmonitor processes

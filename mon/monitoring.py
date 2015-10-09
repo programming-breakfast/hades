@@ -13,7 +13,8 @@ def collect(pids):
                     'system': process.cpu_times()[1],
                     'percent': process.cpu_percent(),
                 },
-                "memory": dict(map(lambda i: (i[0], i[1] / (1024 * 1024)), process.memory_info_ex()._asdict().items()))
+                "memory": dict(map(lambda i: (i[0], i[1] / (1024 * 1024)), process.memory_info_ex()._asdict().items())),
+                "created_at": int(process.create_time())
             }
         except:
             pass

@@ -90,7 +90,7 @@ defmodule Hades.Cerberus do
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
     soul = Styx.find(pid)
     if !is_nil(soul) do
-      Styx.update(soul.name, %{state: :stopped, os_pid: nil, pid: nil, metrics: nil, created_at: nil})
+      Styx.update(soul.name, %{state: :stopped, os_pid: nil, pid: nil, metrics: nil})
       File.rm(soul.pid_file)
       case soul.state do
         :trying_to_stop ->
@@ -130,7 +130,7 @@ defmodule Hades.Cerberus do
 
     case :exec.manage(os_pid, soul_startup_options(soul)) do
       {:ok, pid, os_pid} ->
-        Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
+        Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running})
       {:error, :not_found} ->
         Logger.warn("Startup error with managing #{soul.name}: process with PID##{os_pid} does NOT exist")
         if File.rm(soul.pid_file) == :ok do
@@ -145,7 +145,7 @@ defmodule Hades.Cerberus do
         __MODULE__.manage(soul.name)
       {s, reason} ->
         Logger.warn("Startup error with #{soul.name} caz 1. #{inspect s} and 2. #{inspect reason}")
-        Styx.update(soul.name, %{state: :stopped, created_at: nil})
+        Styx.update(soul.name, %{state: :stopped})
     end
   end
 

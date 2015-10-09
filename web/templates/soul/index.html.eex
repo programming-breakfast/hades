@@ -4,6 +4,7 @@
     <th>Name</th>
     <th>Pid</th>
     <th>State</th>
+    <th>Uptime</th>
     <th>cpu system</th>
     <th>cpu user</th>
     <th>cpu percent</th>
@@ -21,6 +22,7 @@
         <td><%= soul.name %></td>
         <td><%= soul.os_pid %></td>
         <td><%= soul.state %></td>
+        <td><%= uptime(@metrics[soul.name]["created_at"]) %></td>
         <td><%= @metrics[soul.name]["cpu_system"] %></td>
         <td><%= @metrics[soul.name]["cpu_user"] %></td>
         <td><%= @metrics[soul.name]["cpu_percent"] %></td>
