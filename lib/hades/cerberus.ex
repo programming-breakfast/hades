@@ -41,7 +41,7 @@ defmodule Hades.Cerberus do
   def handle_call({:stop, name}, _from, state) do
     soul = Styx.find(name)
     if soul.state == :running do
-      stop_soul(soul)
+      stop_soul(soul, false)
     else
       Logger.warn("You can stop only running process '#{soul.name}'")
     end
@@ -127,17 +127,19 @@ defmodule Hades.Cerberus do
   defp manage_soul(soul) do
     {:ok, os_pid_str} = File.read(soul.pid_file)
     {os_pid, _} = Integer.parse(os_pid_str)
-    {:ok, pid, os_pid} = :exec.manage(os_pid, soul_startup_options(soul))
-    Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
+
+    case :exec.manage(os_pid, soul_startup_options(soul)) do
+      {:ok, pid, os_pid} ->
+        Styx.update(soul.name, %{os_pid: os_pid, pid: pid, state: :running, created_at: nil})
+      {:error, :not_found} ->
+        Logger.warn("Startup error with managing #{soul.name}: process with PID##{os_pid} does NOT exist")
+        if File.rm(soul.pid_file) == :ok do
+          run_soul(soul)
+        end
+    end
   end
 
-  defp async_start_soul(soul) do
-    spawn_link fn -> start_soul(soul) end
-  end
-
-  defp start_soul(soul) do
-    Logger.info "Starting external process #{soul.name} with suct options: #{inspect soul_startup_options(soul)}."
-    Styx.update(soul.name, %{state: :trying_to_run})
+  defp run_soul(soul) do
     case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
       {:ok, _} ->
         __MODULE__.manage(soul.name)
@@ -147,8 +149,18 @@ defmodule Hades.Cerberus do
     end
   end
 
-  defp stop_soul(soul) do
-    stop_soul(soul, false)
+  defp async_start_soul(soul) do
+    spawn_link fn -> start_soul(soul) end
+  end
+
+  defp start_soul(soul) do
+    Logger.info "Starting external process #{soul.name} with suct options: #{inspect soul_startup_options(soul)}."
+    Styx.update(soul.name, %{state: :trying_to_run})
+    if File.exists?(soul.pid_file) do
+      manage_soul(soul)
+    else
+      run_soul(soul)
+    end
   end
 
   defp stop_soul(soul, restart) do
@@ -159,6 +171,9 @@ defmodule Hades.Cerberus do
     end
 
     Styx.update(soul.name, %{state: state})
-    :exec.stop(soul.pid)
+    spawn_link fn ->
+      :exec.stop_and_wait(soul.pid, (soul.stop_timeout || @stop_timeout) * 2)
+      File.rm(soul.pid_file)
+    end
   end
 end
