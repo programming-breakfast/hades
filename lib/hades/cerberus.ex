@@ -4,6 +4,7 @@ defmodule Hades.Cerberus do
 
   alias Hades.Soul
   alias Hades.Styx
+  alias Hades.Empusa
 
   def start_link(opts \\ [name: __MODULE__]) do
     GenServer.start_link(__MODULE__, [], opts)
@@ -11,6 +12,7 @@ defmodule Hades.Cerberus do
 
   def init(_) do
     Styx.list() |> Enum.each(&async_start_soul(&1))
+    spawn_link fn -> check_soul_resourses() end
     {:ok, %{}}
   end
 
@@ -109,6 +111,21 @@ defmodule Hades.Cerberus do
   #
   # Private
   #
+
+  defp check_soul_resourses do
+    :timer.sleep(2000)
+    metrics = Empusa.metrics()
+    Styx.list()
+    |> Enum.each(fn soul ->
+      if Dict.has_key?(metrics, soul.name) do
+        if soul.memory_limit && metrics[soul.name]["memory_rss"] > soul.memory_limit do
+          Logger.warn "Soul #{soul.name} exceed memory limit #{soul.memory_limit} Mb. Restarting."
+          __MODULE__.restart(soul.name)
+        end
+      end
+    end)
+    check_soul_resourses()
+  end
 
   @soul_startup_options [:monitor]
   @stop_timeout 60
