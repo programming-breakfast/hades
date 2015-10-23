@@ -6,6 +6,11 @@ defmodule Hades do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    config = Application.get_env(:hades, Hades.Repo)
+    unless Dict.has_key?(config, :database) do
+      Application.put_env(:hades, Hades.Repo, Dict.put(config, :database, System.get_env("DATABASE_PATH")))
+    end
+
     children = [
       # Start the endpoint when the application starts
       supervisor(Hades.Endpoint, []),

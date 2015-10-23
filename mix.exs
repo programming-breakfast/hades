@@ -3,7 +3,7 @@ defmodule Hades.Mixfile do
 
   def project do
     [app: :hades,
-     version: "0.0.1",
+     version: "0.0.2",
      elixir: "~> 1.0",
      elixirc_paths: elixirc_paths(Mix.env),
      compilers: [:phoenix] ++ Mix.compilers,
@@ -21,10 +21,15 @@ defmodule Hades.Mixfile do
        :phoenix,
        :phoenix_html,
        :phoenix_ecto,
+       :sqlite_ecto,
        :cowboy,
        :logger,
        :runtime_tools,
+       :sqlitex,
        :exec,
+       :ibrowse,
+       :erlport,
+       :exjsx,
        :porcelain,
        :tzdata,
        :timex,
@@ -51,7 +56,7 @@ defmodule Hades.Mixfile do
      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.2"},
      {:httpotion, "~> 2.1.0"},
      {:timex, "~> 0.19.4"},
-     {:timex_ecto, "~> 0.5.0"},
+     {:exrm, "0.19.9"},
      {:erlport, git: "https://github.com/hdima/erlport.git"},
      {:exjsx, github: "talentdeficit/exjsx"}
     ]
