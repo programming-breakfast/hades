@@ -8,8 +8,10 @@ defmodule Hades do
 
     config = Application.get_env(:hades, Hades.Repo)
     unless Dict.has_key?(config, :database) do
-      Application.put_env(:hades, Hades.Repo, Dict.put(config, :database, System.get_env("DATABASE_PATH")))
+      Dict.put(config, :database, System.get_env("DATABASE_PATH"))
     end
+    Application.put_env(:hades, :souls_config_path, System.get_env("SOULS_CONFIG_PATH"))
+    Application.put_env(:hades, Hades.Repo, config)
 
     children = [
       # Start the endpoint when the application starts

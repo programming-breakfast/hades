@@ -9,13 +9,13 @@ defmodule Hades.Styx do
   end
 
   def init(_) do
-    config = [
-      %Soul{name: "foo", start: "while true; do sleep 100; done & echo $! > %pid_file%", pid_file: "/Users/timurkozmenko/Projects/hades/tmp/foo.pid"},
-      %Soul{name: "bar", start: "while true; do sleep 200; done & echo $! > %pid_file%", stop: "kill -9 `cat tmp/bar.pid`", pid_file: "/Users/timurkozmenko/Projects/hades/tmp/bar.pid"}
-      # %Soul{name: "mysql", start: "/usr/local/Cellar/mysql/5.6.26/support-files/mysql.server start", stop: "/usr/local/Cellar/mysql/5.6.26/support-files/mysql.server stop", pid_file: "/usr/local/var/mysql/Timurs-MBP.pid", memory_limit: 500}
-    ]
-
     :ets.new(__MODULE__, [:named_table, :set])
+
+    {:ok, ini} = File.read(Application.get_env(:hades, :souls_config_path))
+    config = Ini.decode(ini) |>
+    Enum.map(fn {name, data} ->
+      Map.merge(%Soul{}, Dict.put(data, :name, name))
+    end)
 
     config |> Enum.each(&insert_soul(&1))
 

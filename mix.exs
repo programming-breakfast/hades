@@ -17,6 +17,7 @@ defmodule Hades.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Hades, []},
+     env: [souls_config_path: nil],
      applications: [
        :phoenix,
        :phoenix_html,
@@ -33,6 +34,7 @@ defmodule Hades.Mixfile do
        :porcelain,
        :tzdata,
        :timex,
+       :ini,
        :httpotion
      ]]
   end
@@ -57,6 +59,7 @@ defmodule Hades.Mixfile do
      {:httpotion, "~> 2.1.0"},
      {:timex, "~> 0.19.4"},
      {:exrm, "0.19.9"},
+     {:ini, "0.0.1"},
      {:erlport, git: "https://github.com/hdima/erlport.git"},
      {:exjsx, github: "talentdeficit/exjsx"}
     ]
