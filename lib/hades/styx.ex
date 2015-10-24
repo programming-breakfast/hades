@@ -12,12 +12,11 @@ defmodule Hades.Styx do
     :ets.new(__MODULE__, [:named_table, :set])
 
     {:ok, ini} = File.read(Application.get_env(:hades, :souls_config_path))
-    config = Ini.decode(ini) |>
-    Enum.map(fn {name, data} ->
-      Map.merge(%Soul{}, Dict.put(data, :name, name))
-    end)
 
-    config |> Enum.each(&insert_soul(&1))
+    Ini.decode(ini)
+    |> prepare_ini_params
+    |> Enum.map(fn conf-> Map.merge(%Soul{}, conf) end)
+    |> Enum.each(&insert_soul(&1))
 
     {:ok, %{}}
   end
@@ -57,6 +56,21 @@ defmodule Hades.Styx do
   #
   # Private
   #
+
+  defp prepare_ini_params(souls_config) do
+    souls_config
+    |> Enum.map (fn {name, data} ->
+      Dict.put(data, :name, Atom.to_string(name))
+      |> Enum.reduce(%{}, fn {k,v}, accum ->
+        if k == :stop_timeout or k == :memory_limit do
+          new_value = String.to_integer(v)
+        else
+          new_value = v
+        end
+        Dict.put(accum, k, new_value)
+      end)
+    end)
+  end
 
   defp soul_list do
     :ets.tab2list(__MODULE__) |> Enum.map(fn {_, _, soul} -> soul end)
