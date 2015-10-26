@@ -3,7 +3,7 @@ defmodule Hades.SoulController do
 
   def index(conn, _params) do
     render conn, "index.html",
-    processes_list: Hades.Styx.list(),
+    processes_list: Hades.Styx.list() |> Enum.sort_by(fn(soul) -> soul.name end),
     metrics: Hades.Empusa.metrics()
   end
 
