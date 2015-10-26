@@ -8,8 +8,6 @@
     <th>cpu system</th>
     <th>cpu user</th>
     <th>cpu percent</th>
-    <th>memory pageins</th>
-    <th>memory pfaults</th>
     <th>memory rss</th>
     <th>memory vms</th>
     <th></th>
@@ -26,8 +24,6 @@
         <td><%= @metrics[soul.name]["cpu_system"] %></td>
         <td><%= @metrics[soul.name]["cpu_user"] %></td>
         <td><%= @metrics[soul.name]["cpu_percent"] %></td>
-        <td><%= @metrics[soul.name]["memory_pageins"] %></td>
-        <td><%= @metrics[soul.name]["memory_pfaults"] %></td>
         <td><%= @metrics[soul.name]["memory_rss"] %></td>
         <td><%= @metrics[soul.name]["memory_vms"] %></td>
         <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
