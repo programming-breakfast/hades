@@ -92,6 +92,7 @@ defmodule Hades.Cerberus do
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
     soul = Styx.find(pid)
     if !is_nil(soul) do
+      Logger.warn("Receive DOWN of #{soul.name} with #{inspect message}")
       Styx.update(soul.name, %{state: :stopped, os_pid: nil, pid: nil, metrics: nil})
       File.rm(soul.pid_file)
       case soul.state do
@@ -186,6 +187,7 @@ defmodule Hades.Cerberus do
     else
       :trying_to_stop
     end
+    Logger.warn("Receive stop for #{soul.name} with #{inspect restart} restart")
 
     Styx.update(soul.name, %{state: state})
     spawn_link fn ->
