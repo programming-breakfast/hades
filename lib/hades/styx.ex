@@ -29,6 +29,10 @@ defmodule Hades.Styx do
     GenServer.call(__MODULE__, :list)
   end
 
+  def group_names_list do
+    GenServer.call(__MODULE__, :group_names_list)
+  end
+
   def update(soul_id, soul_attrs) do
     GenServer.call(__MODULE__, {:update, soul_id, soul_attrs})
   end
@@ -43,6 +47,13 @@ defmodule Hades.Styx do
 
   def handle_call(:list, _from, state) do
     {:reply, soul_list(), state}
+  end
+
+  def handle_call(:group_names_list, _from, state) do
+    group_names = soul_list()
+    |> Enum.reduce(HashSet.new, fn(soul, acc) -> Set.union(soul.groups || HashSet.new, acc) end)
+    |> Enum.sort
+    {:reply, group_names, state}
   end
 
   def handle_call({:update, soul_id, soul_attrs}, _from, state) do
@@ -61,7 +72,7 @@ defmodule Hades.Styx do
     processing_map = %{
       :stop_timeout => &(String.to_integer(&1)),
       :memory_limit => &(String.to_integer(&1)),
-      :groups => &(Enum.into(String.split(&1, ','), HashSet.new))
+      :groups => &(Enum.into(String.split(&1, ","), HashSet.new))
     }
 
     souls_config
