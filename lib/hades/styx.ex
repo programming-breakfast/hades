@@ -58,15 +58,22 @@ defmodule Hades.Styx do
   #
 
   defp prepare_ini_params(souls_config) do
+    processing_map = %{
+      :stop_timeout => &(String.to_integer(&1)),
+      :memory_limit => &(String.to_integer(&1)),
+      :groups => &(Enum.into(String.split(&1, ','), HashSet.new))
+    }
+
     souls_config
     |> Enum.map (fn {name, data} ->
       Dict.put(data, :name, Atom.to_string(name))
       |> Enum.reduce(%{}, fn {k,v}, accum ->
-        if k == :stop_timeout or k == :memory_limit do
-          new_value = String.to_integer(v)
+        if Dict.has_key?(processing_map, k) do
+          new_value = Dict.get(processing_map, k).(v)
         else
           new_value = v
         end
+
         Dict.put(accum, k, new_value)
       end)
     end)
