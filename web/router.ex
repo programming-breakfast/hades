@@ -21,6 +21,8 @@ defmodule Hades.Router do
     get "/souls/:name/start", SoulController, :start
     get "/souls/:name/stop", SoulController, :stop
     get "/souls/:name/restart", SoulController, :restart
+
+    get "/souls/groups/:name/:group_action", SoulController, :group_action
   end
 
   # Other scopes may use custom stacks.

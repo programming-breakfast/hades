@@ -41,6 +41,10 @@ defmodule Hades.Styx do
     GenServer.call(__MODULE__, {:find, criteria})
   end
 
+  def find_by_group(group_name) do
+    GenServer.call(__MODULE__, {:find_by_group, group_name})
+  end
+
   #
   # Server callbacks
   #
@@ -64,15 +68,23 @@ defmodule Hades.Styx do
     {:reply, find_soul(criteria), state}
   end
 
+  def handle_call({:find_by_group, group_name}, _from, state) do
+    souls = soul_list()
+    |> Enum.filter(fn(soul)-> Set.member?(soul.groups, group_name) end)
+    {:reply, souls, state}
+  end
+
   #
   # Private
   #
 
   defp prepare_ini_params(souls_config) do
     processing_map = %{
-      :stop_timeout => &(String.to_integer(&1)),
-      :memory_limit => &(String.to_integer(&1)),
-      :groups => &(Enum.into(String.split(&1, ","), HashSet.new))
+      :stop_timeout => &(String.to_integer(&1[:stop_timeout])),
+      :memory_limit => &(String.to_integer(&1[:memory_limit])),
+      :groups => &(Enum.into(String.split(&1[:groups], ","), HashSet.new)),
+      :start => &(String.replace(&1[:start], "%pid_file%", &1[:pid_file] || "")),
+      :stop => &(String.replace(&1[:stop], "%pid_file%", &1[:pid_file] || ""))
     }
 
     souls_config
@@ -80,7 +92,7 @@ defmodule Hades.Styx do
       Dict.put(data, :name, Atom.to_string(name))
       |> Enum.reduce(%{}, fn {k,v}, accum ->
         if Dict.has_key?(processing_map, k) do
-          new_value = Dict.get(processing_map, k).(v)
+          new_value = Dict.get(processing_map, k).(data)
         else
           new_value = v
         end

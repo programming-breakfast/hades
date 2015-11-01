@@ -21,36 +21,40 @@ defmodule Hades.Cerberus do
   #
 
   def stop(name) do
-    GenServer.call(__MODULE__, {:stop, name})
+    GenServer.cast(__MODULE__, {:stop, name})
   end
 
   def start(name) do
-    GenServer.call(__MODULE__, {:start, name})
+    GenServer.cast(__MODULE__, {:start, name})
   end
 
   def restart(name) do
-    GenServer.call(__MODULE__, {:restart, name})
+    GenServer.cast(__MODULE__, {:restart, name})
+  end
+
+  def group_action(action, name) do
+    GenServer.cast(__MODULE__, {:group_action, action, name})
   end
 
   def manage(name) do
-    GenServer.call(__MODULE__, {:manage, name})
+    GenServer.cast(__MODULE__, {:manage, name})
   end
 
   #
   # Server callbacks
   #
 
-  def handle_call({:stop, name}, _from, state) do
+  def handle_cast({:stop, name}, state) do
     soul = Styx.find(name)
     if soul.state == :running do
       stop_soul(soul, false)
     else
       Logger.warn("You can stop only running process '#{soul.name}'")
     end
-    {:reply, soul, state}
+    {:noreply, state}
   end
 
-  def handle_call({:restart, name}, _from, state) do
+  def handle_cast({:restart, name}, state) do
     soul = Styx.find(name)
 
     case soul.state do
@@ -62,10 +66,10 @@ defmodule Hades.Cerberus do
         Logger.warn("You can restart only stopped or running process '#{soul.name}'")
     end
 
-    {:reply, soul, state}
+    {:noreply, state}
   end
 
-  def handle_call({:start, name}, _from, state) do
+  def handle_cast({:start, name}, state) do
     soul = Styx.find(name)
     Logger.info "start process #{inspect soul}"
     case soul.state do
@@ -74,10 +78,16 @@ defmodule Hades.Cerberus do
       _ ->
         Logger.warn("You can start only stopped process '#{soul.name}'")
     end
-    {:reply, soul, state}
+    {:noreply, state}
   end
 
-  def handle_call({:manage, name}, _from, state) do
+  def handle_cast({:group_action, action, name}, state) do
+    Styx.find_by_group(name) |>
+    Enum.each(&(GenServer.cast(__MODULE__, {action, &1.name})))
+    {:noreply, state}
+  end
+
+  def handle_cast({:manage, name}, state) do
     soul = Styx.find(name)
     Logger.info "manage process #{inspect soul}"
     case soul.state do
@@ -86,7 +96,7 @@ defmodule Hades.Cerberus do
       _ ->
         Logger.warn("You can manage only pre runned process '#{soul.name}'")
     end
-    {:reply, soul, state}
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, message}, state) do
@@ -158,7 +168,7 @@ defmodule Hades.Cerberus do
   end
 
   defp run_soul(soul) do
-    case :exec.run(String.to_char_list(String.replace(soul.start, "%pid_file%", soul.pid_file || "")), [:sync]) do
+    case :exec.run(String.to_char_list(soul.start), [:sync]) do
       {:ok, _} ->
         __MODULE__.manage(soul.name)
       {s, reason} ->
@@ -190,9 +200,6 @@ defmodule Hades.Cerberus do
     Logger.warn("Receive stop for #{soul.name} with #{inspect restart} restart")
 
     Styx.update(soul.name, %{state: state})
-    spawn_link fn ->
-      :exec.stop_and_wait(soul.pid, (soul.stop_timeout || @stop_timeout) * 2)
-      File.rm(soul.pid_file)
-    end
+    :exec.stop(soul.pid)
   end
 end

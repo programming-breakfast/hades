@@ -1,7 +1,7 @@
 <ul>
-    <li>name: <%= @process.name %></li>
-    <li>description: <%= @process.description %></li>
-    <li>pid: <%= @process.os_pid %></li>
+    <%= for key <- Map.keys(@process) do %>
+      <li><%= key %>: <%= inspect Map.get(@process, key) %></li>
+    <% end %>
 </ul>
 
 <p>

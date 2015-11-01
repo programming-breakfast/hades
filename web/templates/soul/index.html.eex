@@ -1,39 +1,56 @@
-<h1>Souls</h1>
-<table class="table table-striped table-bordered">
-  <tr>
-    <th>Name</th>
-    <th>Pid</th>
-    <th>State</th>
-    <th>Uptime</th>
-    <th>cpu system</th>
-    <th>cpu user</th>
-    <th>cpu percent</th>
-    <th>memory rss</th>
-    <th>memory vms</th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
-  <%= for soul <- @processes_list do %>
-      <tr>
-        <td><%= soul.name %></td>
-        <td><%= soul.os_pid %></td>
-        <td><%= soul.state %></td>
-        <td><%= uptime(@metrics[soul.name]["created_at"]) %></td>
-        <td><%= @metrics[soul.name]["cpu_system"] %></td>
-        <td><%= @metrics[soul.name]["cpu_user"] %></td>
-        <td><%= @metrics[soul.name]["cpu_percent"] %></td>
-        <td><%= @metrics[soul.name]["memory_rss"] %></td>
-        <td><%= @metrics[soul.name]["memory_vms"] %></td>
-        <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
-        <td><a href="<%= soul_path(@conn, :stop, soul.name) %>">Stop</a></td>
-        <td><a href="<%= soul_path(@conn, :restart, soul.name) %>">Restart</a></td>
-        <td><a href="<%= soul_path(@conn, :show, soul.name) %>">Show process info</a></td>
-      </tr>
-  <% end %>
-</table>
 
+<div class="col-lg-3">
+  <h3>Groups</h3>
+  <table class="table table-striped table-bordered">
+    <%= for group_name <- @processes_groups do %>
+      <tr>
+        <td><%= group_name %></td>
+        <td><a href="<%= soul_path(@conn, :group_action, group_name, :start) %>">Start</a></td>
+        <td><a href="<%= soul_path(@conn, :group_action, group_name, :stop) %>">Stop</a></td>
+        <td><a href="<%= soul_path(@conn, :group_action, group_name, :restart) %>">Restart</a></td>
+      <tr>
+    <% end %>
+  </table>
+</div>
+<div class="col-lg-12">
+  <h3>Souls</h3>
+  <table class="table table-striped table-bordered">
+    <tr>
+      <th>Name</th>
+      <th>Pid</th>
+      <th>State</th>
+      <th>Uptime</th>
+      <th>cpu system</th>
+      <th>cpu user</th>
+      <th>cpu percent</th>
+      <th>memory rss</th>
+      <th>memory vms</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+    <%= for soul <- @processes_list do %>
+        <tr>
+          <td><%= soul.name %></td>
+          <td><%= soul.os_pid %></td>
+          <td><%= soul.state %></td>
+          <td><%= uptime(@metrics[soul.name]["created_at"]) %></td>
+          <td><%= @metrics[soul.name]["cpu_system"] %></td>
+          <td><%= @metrics[soul.name]["cpu_user"] %></td>
+          <td><%= @metrics[soul.name]["cpu_percent"] %></td>
+          <td><%= @metrics[soul.name]["memory_rss"] %></td>
+          <td><%= @metrics[soul.name]["memory_vms"] %></td>
+          <td><%= soul.groups |> Enum.join(", ") %></td>
+          <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
+          <td><a href="<%= soul_path(@conn, :stop, soul.name) %>">Stop</a></td>
+          <td><a href="<%= soul_path(@conn, :restart, soul.name) %>">Restart</a></td>
+          <td><a href="<%= soul_path(@conn, :show, soul.name) %>">Show process info</a></td>
+        </tr>
+    <% end %>
+  </table>
+</div>
 
 <script type="text/javascript">
   setTimeout(function(){location.reload()}, 2000)
