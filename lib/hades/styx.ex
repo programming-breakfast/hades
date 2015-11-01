@@ -70,7 +70,7 @@ defmodule Hades.Styx do
 
   def handle_call({:find_by_group, group_name}, _from, state) do
     souls = soul_list()
-    |> Enum.filter(fn(soul)-> Set.member?(soul.groups, group_name) end)
+    |> Enum.filter(fn(soul)-> soul.groups && Set.member?(soul.groups, group_name) end)
     {:reply, souls, state}
   end
 

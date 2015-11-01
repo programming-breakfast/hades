@@ -42,7 +42,7 @@
           <td><%= @metrics[soul.name]["cpu_percent"] %></td>
           <td><%= @metrics[soul.name]["memory_rss"] %></td>
           <td><%= @metrics[soul.name]["memory_vms"] %></td>
-          <td><%= soul.groups |> Enum.join(", ") %></td>
+          <td><%= (soul.groups || []) |> Enum.join(", ") %></td>
           <td><a href="<%= soul_path(@conn, :start, soul.name) %>">Start</a></td>
           <td><a href="<%= soul_path(@conn, :stop, soul.name) %>">Stop</a></td>
           <td><a href="<%= soul_path(@conn, :restart, soul.name) %>">Restart</a></td>
